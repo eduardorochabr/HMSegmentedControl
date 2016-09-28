@@ -313,17 +313,28 @@
                 rectDiv = CGRectMake(xOffset - (self.verticalDividerWidth / 2), self.selectionIndicatorHeight * 2, self.verticalDividerWidth, self.frame.size.height - (self.selectionIndicatorHeight * 4));
             }
             
-            // Fix rect position/size to avoid blurry labels
-            rect = CGRectMake(ceilf(rect.origin.x), ceilf(rect.origin.y), ceilf(rect.size.width), ceilf(rect.size.height));
+            id text = [self attributedTitleAtIndex:idx];
             
-            CATextLayer *titleLayer = [CATextLayer layer];
-            titleLayer.frame = rect;
-            titleLayer.alignmentMode = kCAAlignmentCenter;
-            if ([UIDevice currentDevice].systemVersion.floatValue < 10.0 ) {
-                titleLayer.truncationMode = kCATruncationEnd;
+            CATextLayer *titleLayer;
+            
+            if ([text isKindOfClass:[NSMutableAttributedString class]]) {
+                UILabel *label = [UILabel new];
+                label.attributedText = text;
+                label.frame = rect;
+                label.numberOfLines = 0;
+                label.textAlignment = NSTextAlignmentCenter;
+                [label.layer displayIfNeeded];
+                titleLayer = label.layer;
+            } else {
+                titleLayer = [CATextLayer layer];
+                titleLayer.frame = rect;
+                titleLayer.alignmentMode = kCAAlignmentCenter;
+                if ([UIDevice currentDevice].systemVersion.floatValue < 10.0 ) {
+                    titleLayer.truncationMode = kCATruncationEnd;
+                }
+                titleLayer.string = text;
+                titleLayer.contentsScale = [[UIScreen mainScreen] scale];
             }
-            titleLayer.string = [self attributedTitleAtIndex:idx];
-            titleLayer.contentsScale = [[UIScreen mainScreen] scale];
             
             [self.scrollView.layer addSublayer:titleLayer];
             
